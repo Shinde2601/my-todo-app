@@ -428,9 +428,9 @@ export default function App() {
 
       <div className="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-100">
         <Header />
-        <div className="flex justify-end mb-3">
+        {/* <div className="flex justify-end mb-3">
           <UserMenu />
-        </div>
+        </div> */}
 
         {/* Input group — fixed Add alignment */}
         <div className="mt-4">
