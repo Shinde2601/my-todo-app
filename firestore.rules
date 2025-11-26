@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId}/todos/{todoId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && isValidTodoCreate(request.resource.data);
+
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && isValidTodoUpdate(request.resource.data, resource.data);
+
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // -----------------------
+    // helper functions
+    function isValidTodoCreate(data) {
+      return data.keys().hasAll(['id','text','completed','createdAt'])
+        && data.text is string
+        && data.completed is bool
+        && data.createdAt is number
+        && ( !data.keys().hasAny(['dueDate']) || data.dueDate is string )
+        && ( !data.keys().hasAny(['tags']) || data.tags is list );
+    }
+
+    function isValidTodoUpdate(newData, oldData) {
+      // allow text, completed, tags, dueDate updates.
+      // do not allow changing owner metadata — owner enforced by path
+      return newData.text is string
+        && newData.completed is bool
+        && ( !newData.keys().hasAny(['createdAt']) || newData.createdAt is number )
+        && ( !newData.keys().hasAny(['dueDate']) || newData.dueDate is string )
+        && ( !newData.keys().hasAny(['tags']) || newData.tags is list );
+    }
+  }
+}
